@@ -1,35 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-          <title>ant - k8s安装部署</title>
-        <meta charset="utf-8" />
-        <meta name="generator" content="Pelican" />
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="devasops.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="ant Full Atom Feed" />
-        <link href="devasops.github.io/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="ant Categories Atom Feed" />
+        <link rel="stylesheet" type="text/css" href="devasops.github.io/theme/css/elegant.prod.9e9d5ce754.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="devasops.github.io/theme/css/custom.css" media="screen">
+
+        <link rel="dns-prefetch" href="//fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+
+        <meta name="author" content="ant" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content=", misc, " />
+
+<meta property="og:title" content="k8s安装部署 "/>
+<meta property="og:url" content="devasops.github.io/k8san-zhuang-bu-shu.html" />
+<meta property="og:description" content="集群安装方式对比 kops 是官方出的 Kubernetes Operations，生产级 K8s 的安装、升级和管理。 可以看做是适用于集群的 kubectl，kops 可帮助您从命令行创 …" />
+<meta property="og:site_name" content="ant" />
+<meta property="og:article:author" content="ant" />
+<meta property="og:article:published_time" content="2010-12-03T10:20:00+08:00" />
+<meta name="twitter:title" content="k8s安装部署 ">
+<meta name="twitter:description" content="集群安装方式对比 kops 是官方出的 Kubernetes Operations，生产级 K8s 的安装、升级和管理。 可以看做是适用于集群的 kubectl，kops 可帮助您从命令行创 …">
+
+        <title>k8s安装部署  · ant
+</title>
+        <link href="devasops.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="ant - Full Atom Feed" />
 
 
 
+    </head>
+    <body>
+        <div id="content">
+            <div class="navbar navbar-static-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand" href="devasops.github.io/"><span class=site-name>ant</span></a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav pull-right top-menu">
+                                <li >
+                                    <a href=
+                                       devasops.github.io
+                                    >Home</a>
+                                </li>
+                                <li ><a href="devasops.github.io/categories.html">Categories</a></li>
+                                <li ><a href="devasops.github.io/tags.html">Tags</a></li>
+                                <li ><a href="devasops.github.io/archives.html">Archives</a></li>
+                                <li><form class="navbar-search" action="devasops.github.io/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span1"></div>
+                    <div class="span10">
+<article itemscope>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+        <h1>
+            <a href="devasops.github.io/k8san-zhuang-bu-shu.html">
+                k8s安装部署
+            </a>
+        </h1>
+    </header>
+</div>
 
-
-</head>
-
-<body>
-        <header>
-              <hgroup><h1><a href="devasops.github.io/">ant</a></h1></hgroup>
-        <nav><ul>
-            <li><a href="devasops.github.io/category/misc.html"  aria-current="page" >misc</a></li>
-        </ul></nav>
-        </header>
-        <main>
-<article>
-  <header>
-    <h2>
-      <a href="devasops.github.io/k8san-zhuang-bu-shu.html" rel="bookmark"
-         title="Permalink to k8s安装部署">k8s安装部署</a></h2>
- 
-  </header>
-  <h1>集群安装方式对比</h1>
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+            
+            <h1>集群安装方式对比</h1>
 <p>kops 是官方出的 Kubernetes Operations，生产级 K8s 的安装、升级和管理。
 可以看做是适用于集群的 kubectl，kops 可帮助您从命令行创建，销毁，升级和维护生产级，高可用性的 Kubernetes 集群。
 目前正式支持AWS（Amazon Web Services），其中 GCE 和 OpenStack 处于 beta 测试阶段，而 VMware vSphere 处于 alpha 阶段，并且计划其他平台。
@@ -582,24 +631,159 @@ cat<span class="w"> </span>inventory/mycluster/group_vars/k8s-cluster/k8s-cluste
 
 ansible-playbook<span class="w"> </span>-i<span class="w"> </span>inventory/mycluster/hosts.yaml<span class="w">  </span>--become<span class="w"> </span>--become-user<span class="o">=</span>root<span class="w"> </span>cluster.yml<span class="w"> </span>-v
 </code></pre></div>
-  <footer>
-    <p>Published: <time datetime="2010-12-03T10:20:00+08:00">
-      Fri 03 December 2010
-    </time></p>
-    <address>
-      By           <a href="devasops.github.io/author/ant.html">ant</a>
-    </address>
-    <p>
-        Category: <a href="devasops.github.io/category/misc.html">misc</a>
-    </p>
-  </footer>
-  </article>
-        </main>
-        <footer>
-                <address>
-                Proudly powered by <a rel="nofollow" href="https://getpelican.com/">Pelican</a>,
-                which takes great advantage of <a rel="nofollow" href="https://www.python.org/">Python</a>.
-                </address>
-        </footer>
-</body>
+
+
+             
+ 
+            
+            
+            
+
+
+
+
+
+
+
+            <hr/>
+        </div>
+        <section id="article-sidebar" class="span2">
+            <h4>Published</h4>
+            <time itemprop="dateCreated" datetime="2010-12-03T10:20:00+08:00">Fri 03 December 2010</time>
+            <h4>Category</h4>
+            <a class="category-link" href="devasops.github.io/categories.html#misc-ref">misc</a>
+<h4>Contact</h4>
+<div id="sidebar-social-link">
+</div>
+            
+
+
+
+
+
+            
+
+
+
+
+
+        </section>
+</div>
+</article>
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe.
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides.
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>                    </div>
+                    <div class="span1"></div>
+                </div>
+            </div>
+        </div>
+<footer>
+
+
+
+
+    <div id="fpowered">
+        Powered by: <a href="http://getpelican.com/" title="Pelican Home Page" target="_blank" rel="nofollow noopener noreferrer">Pelican</a>
+        Theme: <a href="https://elegant.oncrashreboot.com/" title="Theme Elegant Home Page" target="_blank" rel="nofollow noopener noreferrer">Elegant</a>
+    </div>
+</footer>            <script src="//code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script src="devasops.github.io/theme/js/elegant.prod.9e9d5ce754.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    <script>
+    (function () {
+        if (window.location.hash.match(/^#comment-\d+$/)) {
+            $('#comment_thread').collapse('show');
+        }
+    })();
+    window.onhashchange=function(){
+        if (window.location.hash.match(/^#comment-\d+$/))
+            window.location.reload(true);
+    }
+    $('#comment_thread').on('shown', function () {
+        var link = document.getElementById('comment-accordion-toggle');
+        var old_innerHTML = link.innerHTML;
+        $(link).fadeOut(200, function() {
+            $(this).text('Click here to hide comments').fadeIn(200);
+        });
+        $('#comment_thread').on('hidden', function () {
+            $(link).fadeOut(200, function() {
+                $(this).text(old_innerHTML).fadeIn(200);
+            });
+        })
+    })
+</script>
+
+    </body>
+    <!-- Theme: Elegant built for Pelican
+        License : MIT -->
 </html>
