@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content="Pelican" />
+        <title>ant - misc</title>
+        <link rel="stylesheet" href="devasops.github.io/theme/css/main.css" />
+        <link href="devasops.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="ant Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="devasops.github.io/">ant</a></h1>
+                <nav><ul>
+                    <li class="active"><a href="devasops.github.io/category/misc.html">misc</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="devasops.github.io/my-first-review.html">My First Review</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2010-12-03T10:20:00+08:00">
+                Published: Fri 03 December 2010
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="devasops.github.io/author/ant.html">ant</a>
+        </address>
+<p>In <a href="devasops.github.io/category/misc.html">misc</a>.</p>
+
+</footer><!-- /.post-info --><h1>集群安装方式对比</h1>
+<p>kops 是官方出的 Kubernetes Operations，生产级 K8s 的安装、升级和管理。
+可以看做是适用于集群的 kubectl，kops 可帮助您从命令行创建，销毁，升级和维护生产级，高可用性的 Kubernetes 集群。
+目前正式支持AWS（Amazon Web Services），其中 GCE 和 OpenStack 处于 beta 测试阶段，而 VMware vSphere 处于 alpha 阶段，并且计划其他平台。
+可见，它对云平台结合紧密而提供独特功能，如果未来预见只使用某个云平台，那么相比 kubespray 是更好的选择。
+kubeadm 官方维护的为了给创建 Kubernetes 集群提供最佳实践的一个工具，涉及集群生命周期管理等知识。
+通过 kubeadm 命令来管理，kubeadm &lt; init | join | upgrade | reset &gt;。
+kubespray 是部署生产环境就绪的 Kubernetes 集群的工具。kubernetes-sigs 组织维护。
+特点是通过 Ansible 部署，所以相比 kops 方式，kubespray 是 OS 级别通用的部署方式（可以是裸机或者云）。
+另外 kubespray 2.8 以上版本推荐用 kubeadm 创建集群，以便从中使用生命周期管理的实践 并 卸载其中 OS 配置的东西。相当于结合了 kubeadm 以及自身的优点。
+GitHub地址：https://github.com/kubernetes-sigs/kubespray
+推荐使用kubespray2.8以上版本部署k8s集群。</p>
+<h1>操作系统内核升级</h1>
+<p>Docker对内核的要求
+Note: If you use OverlayFS, use the overlay2 driver rather than the overlay driver, because it is more efficient in terms of inode utilization. To use the new driver, you need version 4.0 or higher of the Linux kernel, or RHEL or CentOS using version 3.10.0-514 and above.</p>
+<p>For more information about differences between overlay vs overlay2, check Docker storage drivers.</p>
+<h1>升级centos7内核</h1>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>elrepo-release
+
+yum<span class="w"> </span>--disablerepo<span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="w"> </span>--enablerepo<span class="o">=</span><span class="s2">&quot;elrepo-kernel&quot;</span><span class="w"> </span>list<span class="w"> </span>available<span class="w">    </span>&lt;查看可升级的内核版本&gt;
+
+yum<span class="w"> </span>--enablerepo<span class="o">=</span>elrepo-kernel<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>kernel-lt<span class="w">   </span>&lt;安装长期lts支持版本&gt;
+
+<span class="c1">#更改开机引导顺序</span>
+grub2-set-default<span class="w"> </span><span class="s1">&#39;CentOS Linux (5.4.125-1.el7.elrepo.x86_64) 7 (Core)&#39;</span>
+grub2-mkconfig<span class="w"> </span>-o<span class="w"> </span>/boot/grub2/grub.cfg
+<span class="c1">#查看引导顺序</span>
+grub2-editenv<span class="w"> </span>list
+<span class="nv">saved_entry</span><span class="o">=</span>CentOS<span class="w"> </span>Linux<span class="w"> </span><span class="o">(</span><span class="m">5</span>.4.125-1.el7.elrepo.x86_64<span class="o">)</span><span class="w"> </span><span class="m">7</span><span class="w"> </span><span class="o">(</span>Core<span class="o">)</span>
+<span class="c1">#重启主机生效</span>
+reboot
+Connection<span class="w"> </span>closing...Socket<span class="w"> </span>close.
+
+uname<span class="w"> </span>-a
+Linux<span class="w"> </span>xfcloud-test01<span class="w"> </span><span class="m">5</span>.4.125-1.el7.elrepo.x86_64<span class="w"> </span><span class="c1">#1 SMP Wed Jun 9 15:53:21 EDT 2021 x86_64 x86_64 x86_64 GNU/Linux</span>
+</code></pre></div>
+
+<h1>配置操作系统参数</h1>
+<div class="highlight"><pre><span></span><code><span class="c1">#操作系统安装基础包</span>
+yum<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>curl<span class="w"> </span>wget<span class="w"> </span>telnet<span class="w"> </span>vim<span class="w"> </span>sysstat<span class="w"> </span>cifs*<span class="w"> </span>nfs-utils<span class="w"> </span>net-tools<span class="w"> </span>bash-completion<span class="w"> </span>bash-completion-extras<span class="w"> </span>ntp*<span class="w"> </span>unzip<span class="w"> </span>tree<span class="w">  </span>bind-utils<span class="w"> </span>tcpdump<span class="w"> </span>lrzsz<span class="w"> </span>strace<span class="w"> </span>lsof
+
+
+<span class="c1"># 所有节点配置k8s集群中必须的内核参数</span>
+cat<span class="w"> </span><span class="s">&lt;&lt;EOF  &gt;&gt;/etc/sysctl.d/k8s.conf</span>
+<span class="s">#Network Bridge - Netfilter Call - IPv6 Tables</span>
+<span class="s">net.bridge.bridge-nf-call-ip6tables=1</span>
+<span class="s">net.bridge.bridge-nf-call-iptables=1</span>
+<span class="s"># net.ipv4=/proc/sys/net/ipv4 ,ip_forward</span>
+<span class="s">net.ipv4.ip_forward=1</span>
+<span class="s">#net.ipv4.conf.all.forwarding=/proc/sys/net/ipv4/conf/all/forwarding</span>
+<span class="s">net.ipv4.conf.all.forwarding=1</span>
+<span class="s">#Neighbor Table  gc=Garbage Collection</span>
+<span class="s">net.ipv4.neigh.default.gc_thresh1=4096</span>
+<span class="s">net.ipv4.neigh.default.gc_thresh2=6144</span>
+<span class="s">net.ipv4.neigh.default.gc_thresh3=8192</span>
+<span class="s">net.ipv4.neigh.default.gc_interval=60</span>
+<span class="s">net.ipv4.neigh.default.gc_stale_time=120</span>
+
+<span class="s">#sysctls for k8s node config</span>
+<span class="s">net.ipv4.tcp_slow_start_after_idle=0</span>
+<span class="s">net.core.rmem_max=16777216</span>
+<span class="s">fs.inotify.max_user_watches=524288</span>
+<span class="s">kernel.softlockup_all_cpu_backtrace=1</span>
+<span class="s">kernel.softlockup_panic=1</span>
+<span class="s">fs.file-max=2097152</span>
+<span class="s">fs.inotify.max_user_instances=8192</span>
+<span class="s">fs.inotify.max_queued_events=16384</span>
+<span class="s">vm.max_map_count=262144</span>
+<span class="s">fs.may_detach_mounts=1</span>
+<span class="s">net.core.netdev_max_backlog=16384</span>
+<span class="s">net.ipv4.tcp_wmem=4096 12582912 16777216</span>
+<span class="s">net.core.wmem_max=16777216</span>
+<span class="s">net.core.somaxconn=32768</span>
+<span class="s">net.ipv4.ip_forward=1</span>
+<span class="s">net.ipv4.tcp_max_syn_backlog=8096</span>
+<span class="s">net.ipv4.tcp_rmem=4096 12582912 16777216</span>
+
+<span class="s">net.ipv6.conf.all.disable_ipv6=1</span>
+<span class="s">net.ipv6.conf.default.disable_ipv6=1</span>
+<span class="s">net.ipv6.conf.lo.disable_ipv6=1</span>
+
+<span class="s">kernel.yama.ptrace_scope=0</span>
+<span class="s">vm.swappiness=0</span>
+
+<span class="s"># 可以控制core文件的文件名中是否添加pid作为扩展。</span>
+<span class="s">kernel.core_uses_pid=1</span>
+
+<span class="s"># Do not accept source routing</span>
+<span class="s">net.ipv4.conf.default.accept_source_route=0</span>
+<span class="s">net.ipv4.conf.all.accept_source_route=0</span>
+
+<span class="s"># Promote secondary addresses when the primary address is removed</span>
+<span class="s">net.ipv4.conf.default.promote_secondaries=1</span>
+<span class="s">net.ipv4.conf.all.promote_secondaries=1</span>
+
+<span class="s"># Enable hard and soft link protection</span>
+<span class="s">fs.protected_hardlinks=1</span>
+<span class="s">fs.protected_symlinks=1</span>
+
+<span class="s"># 源路由验证</span>
+<span class="s"># see details in https://help.aliyun.com/knowledge_detail/39428.html</span>
+<span class="s">net.ipv4.conf.all.rp_filter=0</span>
+<span class="s">net.ipv4.conf.default.rp_filter=0</span>
+<span class="s">net.ipv4.conf.default.arp_announce = 2</span>
+<span class="s">net.ipv4.conf.lo.arp_announce=2</span>
+<span class="s">net.ipv4.conf.all.arp_announce=2</span>
+
+<span class="s"># see details in https://help.aliyun.com/knowledge_detail/41334.html</span>
+<span class="s">net.ipv4.tcp_max_tw_buckets=5000</span>
+<span class="s">net.ipv4.tcp_syncookies=1</span>
+<span class="s">net.ipv4.tcp_fin_timeout=30</span>
+<span class="s">net.ipv4.tcp_synack_retries=2</span>
+<span class="s">kernel.sysrq=1</span>
+
+<span class="s"># For mysql</span>
+<span class="s">fs.aio-max-nr=262144</span>
+<span class="s">EOF</span>
+
+
+<span class="c1">#生效参数</span>
+sysctl<span class="w"> </span>--system
+</code></pre></div>
+
+<h1>所有节点关闭防火墙、selinux 、swap等</h1>
+<div class="highlight"><pre><span></span><code>systemctl<span class="w"> </span>disable<span class="w"> </span>firewalld<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>firewalld
+systemctl<span class="w"> </span>disable<span class="w"> </span>NetworkManager<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>NetworkManager
+setenforce<span class="w"> </span><span class="m">0</span>
+cat<span class="w"> </span>/etc/sysconfig/selinux
+<span class="nv">SELINUX</span><span class="o">=</span>disabled
+swapoff<span class="w"> </span>-a<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.swappiness<span class="o">=</span><span class="m">0</span>
+</code></pre></div>
+
+<h1>所有节点配置好时间同步</h1>
+<div class="highlight"><pre><span></span><code>systemctl<span class="w"> </span>restart<span class="w"> </span>ntpd<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ntpd<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>chronyd<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>chronyd
+</code></pre></div>
+
+<h1>在每个节点配置阿里云Docker YUM源加速，安装Docker并开机自启，否则系统重启后K8S会因为镜像没启动而失败</h1>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>yum-utils<span class="w"> </span>device-mapper-persistent-data<span class="w"> </span>lvm2
+yum-config-manager<span class="w"> </span>--add-repo<span class="w"> </span>https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum<span class="w"> </span>makecache<span class="w"> </span>fast
+</code></pre></div>
+
+<h1>文件句柄优化</h1>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;/^*/d&#39;</span><span class="w"> </span>/etc/security/limits.conf
+cat<span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/security/limits.conf<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+<span class="s">*                soft    nofile          1000000</span>
+<span class="s">*                hard    nofile          1000000</span>
+<span class="s">*                soft    nproc           65535</span>
+<span class="s">*                hard    nproc           65535</span>
+<span class="s">EOF</span>
+</code></pre></div>
+
+<h1>测试硬盘的io速率，etcd建议使用ssd硬盘</h1>
+<div class="highlight"><pre><span></span><code><span class="c1"># 随机读</span>
+fio<span class="w"> </span>-name<span class="o">=</span>randread<span class="w"> </span>-direct<span class="o">=</span><span class="m">1</span><span class="w"> </span>-iodepth<span class="o">=</span><span class="m">64</span><span class="w"> </span>-rw<span class="o">=</span>randread<span class="w"> </span>-ioengine<span class="o">=</span>libaio<span class="w"> </span>-bs<span class="o">=</span>4k<span class="w"> </span>-size<span class="o">=</span>2G<span class="w"> </span>-numjobs<span class="o">=</span><span class="m">1</span><span class="w"> </span>-runtime<span class="o">=</span><span class="m">1000</span><span class="w"> </span>-group_reporting<span class="w"> </span>-filename<span class="o">=</span>/tmp/test.dbf
+
+<span class="c1"># 随机写</span>
+fio<span class="w"> </span>-name<span class="o">=</span>randwrite<span class="w"> </span>-direct<span class="o">=</span><span class="m">1</span><span class="w"> </span>-iodepth<span class="o">=</span><span class="m">64</span><span class="w"> </span>-rw<span class="o">=</span>randwrite<span class="w"> </span>-ioengine<span class="o">=</span>libaio<span class="w"> </span>-bs<span class="o">=</span>4k<span class="w"> </span>-size<span class="o">=</span>2G<span class="w"> </span>-numjobs<span class="o">=</span><span class="m">1</span><span class="w"> </span>-runtime<span class="o">=</span><span class="m">1000</span><span class="w"> </span>-group_reporting<span class="w"> </span>-filename<span class="o">=</span>/tmp/test.dbf
+</code></pre></div>
+
+<h1>配置私有ftp服务器</h1>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>&gt;&gt;<span class="s2">&quot;EOF&quot;</span><span class="w"> </span>&gt;nginx.conf
+server<span class="w"> </span><span class="o">{</span>
+listen<span class="w"> </span><span class="m">81</span><span class="w"> </span>default_server<span class="p">;</span>
+listen<span class="w"> </span><span class="o">[</span>::<span class="o">]</span>:81<span class="w"> </span>default_server<span class="p">;</span>
+server_name<span class="w"> </span>ftp-test.iflytek.com<span class="p">;</span>
+<span class="c1">#listen 443 ssl http2 default_server;</span>
+<span class="c1">#server_name ftp-test.iflytek.com;</span>
+<span class="c1">#ssl_certificate &quot;/etc/nginx/ssl/iflytek.com.crt&quot;;</span>
+<span class="c1">#ssl_certificate_key &quot;/etc/nginx/ssl/iflytek.com.key&quot;;</span>
+<span class="c1">#ssl_session_cache shared:SSL:1m;</span>
+<span class="c1">#ssl_session_timeout 10m;</span>
+<span class="c1">#ssl_ciphers HIGH:!aNULL:!MD5;</span>
+<span class="c1">#ssl_prefer_server_ciphers on;</span>
+
+location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+root<span class="w"> </span>/usr/share/nginx/data<span class="p">;</span>
+autoindex<span class="w"> </span>on<span class="p">;</span>
+autoindex_exact_size<span class="w"> </span>off<span class="p">;</span>
+autoindex_localtime<span class="w"> </span>on<span class="p">;</span>
+limit_except<span class="w"> </span>GET<span class="w"> </span>POST<span class="w"> </span><span class="o">{</span>
+deny<span class="w"> </span>all<span class="p">;</span>
+<span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1"># set site favicon</span>
+location<span class="w"> </span>~<span class="w"> </span>^/favicon<span class="se">\.</span>ico$<span class="w"> </span><span class="o">{</span>
+root<span class="w"> </span>/usr/share/nginx/html<span class="p">;</span>
+limit_except<span class="w"> </span>GET<span class="w"> </span>POST<span class="w"> </span><span class="o">{</span>
+deny<span class="w"> </span>all<span class="p">;</span>
+<span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1"># Load configuration files for the default server block.</span>
+include<span class="w"> </span>/etc/nginx/default.d/*.conf<span class="p">;</span>
+
+error_page<span class="w"> </span><span class="m">404</span><span class="w"> </span>/404.html<span class="p">;</span>
+<span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/404.html<span class="w"> </span><span class="o">{</span>
+<span class="o">}</span>
+
+error_page<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="m">502</span><span class="w"> </span><span class="m">503</span><span class="w"> </span><span class="m">504</span><span class="w"> </span>/50x.html<span class="p">;</span>
+<span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/50x.html<span class="w"> </span><span class="o">{</span>
+<span class="o">}</span>
+<span class="o">}</span>
+EOF
+
+
+cat<span class="w"> </span>&lt;&lt;<span class="s2">&quot;EOF&quot;</span><span class="w"> </span>&gt;default.conf
+server<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>listen<span class="w">       </span><span class="m">80</span><span class="p">;</span>
+<span class="w">    </span>listen<span class="w">  </span><span class="o">[</span>::<span class="o">]</span>:80<span class="p">;</span>
+<span class="w">    </span>server_name<span class="w">  </span>ftp-test.iflytek.com<span class="p">;</span>
+<span class="w">    </span>access_log<span class="w">  </span>/var/log/nginx/host.access.log<span class="w">  </span>main<span class="p">;</span>
+<span class="w">    </span>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>root<span class="w">   </span>/usr/share/nginx/html<span class="p">;</span>
+<span class="w">        </span>autoindex<span class="w"> </span>on<span class="p">;</span>
+<span class="w">        </span>autoindex_exact_size<span class="w"> </span>off<span class="p">;</span>
+<span class="w">        </span>autoindex_localtime<span class="w"> </span>on<span class="p">;</span>
+<span class="w">        </span>limit_except<span class="w"> </span>GET<span class="w"> </span>POST<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>deny<span class="w"> </span>all<span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+
+
+
+<span class="w">    </span>error_page<span class="w">   </span><span class="m">500</span><span class="w"> </span><span class="m">502</span><span class="w"> </span><span class="m">503</span><span class="w"> </span><span class="m">504</span><span class="w">  </span>/50x.html<span class="p">;</span>
+<span class="w">    </span><span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/50x.html<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>root<span class="w">   </span>/usr/share/nginx/html<span class="p">;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+EOF
+
+
+
+<span class="c1">#容器创建服务</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>/data/public/nginx/<span class="o">{</span>conf,html,logs<span class="o">}</span>
+<span class="nb">cd</span><span class="w"> </span>/data/public/nginx
+docker<span class="w"> </span>run<span class="w"> </span>--detach<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span>k8snginx<span class="w"> </span><span class="se">\</span>
+--publish<span class="w"> </span><span class="m">172</span>.16.188.118:81:80<span class="w"> </span><span class="se">\</span>
+--volume<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/conf:/etc/nginx<span class="w"> </span><span class="se">\</span>
+--volume<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/html:/usr/share/nginx/html<span class="w"> </span><span class="se">\</span>
+--volume<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/logs:/var/log/nginx<span class="w"> </span><span class="se">\</span>
+nginx
+
+mkdir<span class="w"> </span>-p<span class="w"> </span>/data/public/nginx/html/<span class="o">{</span>images,kubernetes<span class="o">}</span>
+
+
+
+kubelet_download_url:<span class="w"> </span><span class="s2">&quot;https://storage.googleapis.com/kubernetes-release/release/v1.19.9/bin/linux/amd64/kubelet&quot;</span>
+kubectl_download_url:<span class="w"> </span><span class="s2">&quot;https://storage.googleapis.com/kubernetes-release/release/v1.19.9/bin/linux/amd64/kubectl&quot;</span>
+<span class="c1"># kubeadm_download_url: &quot;https://storage.googleapis.com/kubernetes-release/release/v1.19.9/bin/linux/amd64/kubeadm&quot;</span>
+etcd_download_url:<span class="w"> </span><span class="s2">&quot;https://github.com/coreos/etcd/releases/download/v3.4.9/etcd-v3.4.9-linux-amd64.tar.gz&quot;</span>
+cni_download_url:<span class="w"> </span><span class="s2">&quot;https://github.com/containernetworking/plugins/releases/download/v0.9.0/cni-plugins-linux-amd64-v0.9.0.tgz&quot;</span>
+calicoctl_download_url:<span class="w"> </span><span class="s2">&quot;https://github.com/projectcalico/calicoctl/releases/download/v3.16.9/calicoctl-linux-amd64&quot;</span>
+calico_crds_download_url:<span class="w"> </span><span class="s2">&quot;https://github.com/projectcalico/calico/archive/v3.16.9.tar.gz&quot;</span>
+crictl_download_url:<span class="w"> </span><span class="s2">&quot;https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/crictl-{{ crictl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz&quot;</span>
+
+helm_download_url:<span class="w"> </span><span class="s2">&quot;{{ files_repo }}/helm-{{ helm_version }}-linux-{{ image_arch }}.tar.gz</span>
+</code></pre></div>
+
+<h1>harbol 离线安装</h1>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://github.com/goharbor/harbor/releases/download/v2.2.2/harbor-offline-installer-v2.2.2.tgz
+
+
+
+<span class="c1"># generator criti</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>/data/cert<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/data/cert
+
+
+<span class="c1">#创建 CA 根证书</span>
+openssl<span class="w"> </span>req<span class="w">  </span>-newkey<span class="w"> </span>rsa:4096<span class="w"> </span>-nodes<span class="w"> </span>-sha256<span class="w"> </span>-keyout<span class="w"> </span>ca.key<span class="w"> </span>-x509<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-out<span class="w"> </span>ca.crt<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/C=CN/L=zhejiang/O=lisea/CN=harbor-registry&quot;</span>
+
+
+<span class="c1">#生成一个证书签名, 设置访问域名为 harborvip.iflytek.com</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-newkey<span class="w"> </span>rsa:4096<span class="w"> </span>-nodes<span class="w"> </span>-sha256<span class="w"> </span>-keyout<span class="w"> </span>harborvip.iflytek.com.key<span class="w"> </span>-out<span class="w"> </span>server.csr<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/C=CN/L=zhejiang/O=lisea/CN=harborvip.iflytek.com&quot;</span>
+
+<span class="c1">#生成主机的证书</span>
+openssl<span class="w"> </span>x509<span class="w"> </span>-req<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-in<span class="w"> </span>server.csr<span class="w"> </span>-CA<span class="w"> </span>ca.crt<span class="w"> </span>-CAkey<span class="w"> </span>ca.key<span class="w"> </span>-CAcreateserial<span class="w"> </span>-out<span class="w"> </span>harborvip.iflytek.com.crt
+
+
+
+
+
+
+<span class="c1">#参考链接：https://goharbor.io/docs/2.0.0/install-config/configure-https</span>
+<span class="c1">#第一个生成的是证书颁发机构(CA)的证书和私钥，它用来签署和验证别的证书。换句话说，它是用来证明别的证书是可信的。</span>
+<span class="c1">#生成CA证书私钥</span>
+openssl<span class="w"> </span>genrsa<span class="w"> </span>-out<span class="w"> </span>ca.key<span class="w"> </span><span class="m">4096</span>
+
+<span class="c1">#用这个私钥，生成加密的CA证书</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-new<span class="w"> </span>-nodes<span class="w"> </span>-sha512<span class="w"> </span>-days<span class="w"> </span><span class="m">3650</span><span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=harborvip.iflytek.com&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>-key<span class="w"> </span>ca.key<span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>-out<span class="w"> </span>ca.crt
+
+
+<span class="c1">#第二个生成的是具体服务器的私钥和证书签名请求(CSR)</span>
+<span class="c1">#生成私钥</span>
+openssl<span class="w"> </span>genrsa<span class="w"> </span>-out<span class="w"> </span>harborvip.iflytek.com.key<span class="w"> </span><span class="m">4096</span>
+
+<span class="c1">#生成证书签名请求（CSR）</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-sha512<span class="w"> </span>-new<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-subj<span class="w"> </span><span class="s2">&quot;/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=harborvip.iflytek.com&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-key<span class="w"> </span>harborvip.iflytek.com.key<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-out<span class="w"> </span>harborvip.iflytek.com.csr
+
+
+<span class="c1">#生成 x509 v3 扩展文件</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>v3.ext<span class="w"> </span><span class="s">&lt;&lt;-EOF</span>
+<span class="s">authorityKeyIdentifier=keyid,issuer</span>
+<span class="s">basicConstraints=CA:FALSE</span>
+<span class="s">keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment</span>
+<span class="s">extendedKeyUsage = serverAuth</span>
+<span class="s">subjectAltName = @alt_names</span>
+
+<span class="s">[alt_names]</span>
+<span class="s">DNS.1=harborvip.iflytek.com</span>
+<span class="s">DNS.2=yourdomain</span>
+<span class="s">DNS.3=hostname</span>
+<span class="s">EOF</span>
+
+<span class="c1">#使用v3扩展配置，生成服务器的证书文件</span>
+openssl<span class="w"> </span>x509<span class="w"> </span>-req<span class="w"> </span>-sha512<span class="w"> </span>-days<span class="w"> </span><span class="m">3650</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-extfile<span class="w"> </span>v3.ext<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-CA<span class="w"> </span>ca.crt<span class="w"> </span>-CAkey<span class="w"> </span>ca.key<span class="w"> </span>-CAcreateserial<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-in<span class="w"> </span>harborvip.iflytek.com.csr<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-out<span class="w"> </span>harborvip.iflytek.com.crt
+
+
+<span class="c1">#给容器配置证书，应为容器以cert作为ca证书后缀，所以需要转换下</span>
+openssl<span class="w"> </span>x509<span class="w"> </span>-inform<span class="w"> </span>PEM<span class="w"> </span>-in<span class="w"> </span>harborvip.iflytek.com.crt<span class="w"> </span>-out<span class="w"> </span>harborvip.iflytek.com.cert
+
+
+<span class="c1">#复制证书文件到docker配置目录中</span>
+
+<span class="c1">#建立docker证书配置目录</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>/etc/docker/certs.d/harborvip.iflytek.com:443
+
+cp<span class="w"> </span>harborvip.iflytek.com.cert<span class="w"> </span>/etc/docker/certs.d/harborvip.iflytek.com:443/
+cp<span class="w"> </span>harborvip.iflytek.com.key<span class="w"> </span>/etc/docker/certs.d/harborvip.iflytek.com:443/
+cp<span class="w"> </span>ca.crt<span class="w"> </span>/etc/docker/certs.d/harborvip.iflytek.com:443/
+
+systemctl<span class="w"> </span>restart<span class="w"> </span>docker
+
+
+
+<span class="c1"># update config</span>
+
+vim<span class="w"> </span>harbor.yml
+<span class="c1"># DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.</span>
+hostname:<span class="w"> </span>harborvip.iflytek.com
+
+https:
+<span class="w">  </span><span class="c1"># https port for harbor, default is 443</span>
+<span class="w">  </span>port:<span class="w"> </span><span class="m">443</span>
+<span class="w">  </span><span class="c1"># The path of cert and key files for nginx</span>
+<span class="w">  </span>certificate:<span class="w"> </span>/data/cert/harborvip.iflytek.com.crt
+<span class="w">  </span>private_key:<span class="w"> </span>/data/cert/harborvip.iflytek.com.key
+
+
+
+
+
+<span class="c1"># Deploy or Reconfigure Harbor</span>
+./prepare
+
+<span class="c1"># deploy harbor</span>
+./install.sh<span class="w"> </span>--with-notary<span class="w"> </span>--with-trivy<span class="w"> </span>--with-chartmuseum
+
+
+
+docker<span class="w"> </span>ps<span class="w"> </span>-a
+
+<span class="c1">#restart</span>
+docker-compose<span class="w"> </span>down<span class="w"> </span>-v
+docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+
+
+
+
+
+<span class="c1">#</span>
+<span class="nb">cd</span><span class="w"> </span>/root/harbor<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>docker-compose<span class="w"> </span>ps<span class="w"> </span>-a
+
+
+<span class="c1"># restart </span>
+docker-compose<span class="w"> </span>restart
+
+
+<span class="c1"># login</span>
+<span class="m">172</span>.16.188.118<span class="w">  </span>harborvip.iflytek.com
+
+admin/Harbor12345
+</code></pre></div>
+
+<h1>上传镜像到harbol中</h1>
+<div class="highlight"><pre><span></span><code><span class="c1"># mirror address</span>
+<span class="c1"># gcr and kubernetes image repo define</span>
+gcr_image_repo:<span class="w"> </span><span class="s2">&quot;gcr.io&quot;</span><span class="w">      </span>now:<span class="w"> </span>https://console.cloud.google.com/gcr/images/google-containers/global
+kube_image_repo:<span class="w"> </span><span class="s2">&quot;k8s.gcr.io&quot;</span>
+
+<span class="c1"># docker image repo define</span>
+docker_image_repo:<span class="w"> </span><span class="s2">&quot;docker.io&quot;</span>
+
+<span class="c1"># quay image repo define</span>
+quay_image_repo:<span class="w"> </span><span class="s2">&quot;quay.io&quot;</span>
+
+
+
+
+docker<span class="w"> </span>login<span class="w"> </span>harborvip.iflytek.com
+
+
+<span class="c1">#download k8s images to private harbor</span>
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-apiserver:v1.18.17
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-apiserver:v1.18.17<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-apiserver:v1.18.17
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-apiserver:v1.18.17
+
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-proxy:v1.18.17
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-proxy:v1.18.17<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-proxy:v1.18.17
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-proxy:v1.18.17
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-controller-manager:v1.18.17
+docker<span class="w"> </span>tag<span class="w">  </span>registry.aliyuncs.com/google_containers/kube-controller-manager:v1.18.17<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-controller-manager:v1.18.17
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-controller-manager:v1.18.17
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-scheduler:v1.18.17
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/kube-scheduler:v1.18.17<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-scheduler:v1.18.17
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/kube-scheduler:v1.18.17
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>calico/node:v3.16.9
+docker<span class="w"> </span>tag<span class="w">  </span>calico/node:v3.16.9<span class="w"> </span>harborvip.iflytek.com/calico/node:v3.16.9
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/calico/node:v3.16.9
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>calico/cni:v3.16.9
+docker<span class="w"> </span>tag<span class="w">  </span>calico/cni:v3.16.9<span class="w"> </span>harborvip.iflytek.com/calico/cni:v3.16.9
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/calico/cni:v3.16.9
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>calico/kube-controllers:v3.16.9
+docker<span class="w"> </span>tag<span class="w">  </span>calico/kube-controllers:v3.16.9<span class="w"> </span>harborvip.iflytek.com/calico/kube-controllers:v3.16.9
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/calico/kube-controllers:v3.16.9
+
+docker<span class="w"> </span>pull<span class="w"> </span>liz2019/k8s-dns-node-cache:1.17.1
+docker<span class="w"> </span>tag<span class="w"> </span>liz2019/k8s-dns-node-cache:1.17.1<span class="w"> </span>harborvip.iflytek.com/google_containers/dns/k8s-dns-node-cache:1.17.1
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/dns/k8s-dns-node-cache:1.17.1
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>dyrnq/local-volume-provisioner:v2.4.0
+docker<span class="w"> </span>tag<span class="w"> </span>dyrnq/local-volume-provisioner:v2.4.0<span class="w"> </span>harborvip.iflytek.com/external_storage/local-volume-provisioner:v2.4.0
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/external_storage/local-volume-provisioner:v2.4.0
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/etcd:3.4.3-0
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/etcd:3.4.3-0<span class="w"> </span>harborvip.iflytek.com/google_containers/etcd:3.4.3-0
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/etcd:3.4.3-0
+
+
+<span class="c1">#可以将gcr.io替换成gcr.lank8s.cn</span>
+docker<span class="w"> </span>pull<span class="w"> </span>gcr.lank8s.cn/google-containers/cluster-proportional-autoscaler-amd64:1.8.1
+docker<span class="w"> </span>tag<span class="w"> </span>gcr.lank8s.cn/google-containers/cluster-proportional-autoscaler-amd64:1.8.1<span class="w"> </span>harborvip.iflytek.com/google_containers/cluster-proportional-autoscaler-amd64:1.8.1
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/cluster-proportional-autoscaler-amd64:1.8.1
+
+<span class="c1">#</span>
+docker<span class="w"> </span>pull<span class="w"> </span>siriuszg/addon-resizer
+docker<span class="w"> </span>tag<span class="w"> </span>siriuszg/addon-resizer<span class="w"> </span>harborvip.iflytek.com/google_containers/addon-resizer
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/addon-resizer
+
+
+<span class="c1">#</span>
+docker<span class="w"> </span>pull<span class="w"> </span>kubernetesui/dashboard-amd64
+docker<span class="w"> </span>tag<span class="w"> </span>kubernetesui/dashboard-amd64<span class="w"> </span>harborvip.iflytek.com/kubernetesui/dashboard-amd64
+docker<span class="w"> </span>push<span class="w">  </span>harborvip.iflytek.com/kubernetesui/dashboard-amd64
+
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/coredns:1.7.0
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/coredns:1.7.0<span class="w"> </span>harborvip.iflytek.com/google_containers/coredns:1.7.0
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/coredns:1.7.0
+
+
+docker<span class="w"> </span>pull<span class="w"> </span>registry.aliyuncs.com/google_containers/pause:3.3
+docker<span class="w"> </span>tag<span class="w"> </span>registry.aliyuncs.com/google_containers/pause:3.3<span class="w"> </span>harborvip.iflytek.com/google_containers/pause:3.3
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/pause:3.3
+
+docker<span class="w"> </span>pull<span class="w"> </span>bitnami/metrics-server
+docker<span class="w"> </span>tag<span class="w"> </span>bitnami/metrics-server<span class="w"> </span>harborvip.iflytek.com/google_containers/metrics-server
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/google_containers/metrics-server
+
+docker<span class="w"> </span>pull<span class="w"> </span>kubernetesui/metrics-scraper
+docker<span class="w"> </span>tag<span class="w">  </span>kubernetesui/metrics-scraper<span class="w"> </span>harborvip.iflytek.com/kubernetesui/metrics-scraper
+docker<span class="w"> </span>push<span class="w"> </span>harborvip.iflytek.com/kubernetesui/metrics-scraper
+</code></pre></div>
+
+<h1>集群的安装部署</h1>
+<div class="highlight"><pre><span></span><code><span class="c1">#download kubespray</span>
+https://codeload.github.com/kubernetes-sigs/kubespray/zip/refs/tags/v2.15.1
+</code></pre></div>
+
+<h2>集群环境介绍</h2>
+<p>NAME            STATUS  ROLES   AGE VERSION<br>
+devops-test01   Ready           20h v1.18.17        工作节点,   harbor,ftp(81,80,443)   <br>
+devops-test02   Ready           20h v1.18.17        工作节点，ingress-nginx(80,443)
+devops-test03   Ready           19h v1.18.17        工作节点，ingress-nginx(80,443)
+xfcloud-test01  Ready   master  20h v1.18.17        仅集群调度，etcd节点
+xfcloud-test02  Ready   master  20h v1.18.17        仅集群调度，etcd节点
+xfcloud-test03  Ready   master  20h v1.18.17        仅集群调度，etcd节点</p>
+<h2>master01节点安装ansible服务并安装依赖软件包</h2>
+<div class="highlight"><pre><span></span><code>yum<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>python-pip<span class="w"> </span>python36<span class="w"> </span>python36-pip<span class="w"> </span>ansible
+pip3<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip<span class="w"> </span>-i<span class="w"> </span>https://mirrors.aliyun.com/pypi/simple/
+
+wget<span class="w"> </span>https://codeload.github.com/kubernetes-sigs/kubespray/zip/refs/tags/v2.15.1
+mv<span class="w"> </span>v2.15.1<span class="w"> </span>kubespray-2.15.1.zip
+unzip<span class="w"> </span>kubespray-2.15.1.zip
+<span class="nb">cd</span><span class="w"> </span>kubespray-2.15.1
+pip3<span class="w"> </span>install<span class="w"> </span>-i<span class="w"> </span>https://mirrors.aliyun.com/pypi/simple/<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1">#配置ssh免密登录</span>
+ssh-copy-id<span class="w"> </span>-i<span class="w"> </span>/root/.ssh/id_rsa.pub<span class="w">  </span>root@172.16.188.118
+
+<span class="c1">#配置ansible服务</span>
+vim<span class="w"> </span>/etc/ansible/hosts
+<span class="o">[</span>k8s-cluster<span class="o">]</span>
+<span class="m">172</span>.16.188.166
+<span class="m">172</span>.16.188.118
+
+<span class="c1">#所有节点安装python3服务</span>
+ansible<span class="w"> </span>k8s-cluster<span class="w"> </span>-m<span class="w"> </span>shell<span class="w"> </span>-a<span class="s2">&quot;yum install -y python-pip python36 python36-pip&quot;</span>
+</code></pre></div>
+
+<h2>定制kubespray配置文件</h2>
+<p>主要修改inentory和roles目录下的文件，修改下载文件及镜像地址为私有仓库，及一些服务参数的优化，详情见安装文件“kubespray-2.15.2”</p>
+<div class="highlight"><pre><span></span><code>vim<span class="w"> </span>roles/download/defaults/main.yml
+</code></pre></div>
+
+<h2>安装K8s集群</h2>
+<div class="highlight"><pre><span></span><code>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+
+cp<span class="w"> </span>-rfp<span class="w"> </span>inventory/sample<span class="w"> </span>inventory/mycluster
+<span class="nb">declare</span><span class="w"> </span>-a<span class="w"> </span><span class="nv">IPS</span><span class="o">=(</span><span class="m">172</span>.16.188.166<span class="w"> </span><span class="m">172</span>.16.188.118<span class="o">)</span>
+<span class="nv">CONFIG_FILE</span><span class="o">=</span>inventory/mycluster/hosts.yaml<span class="w"> </span>python3<span class="w"> </span>contrib/inventory_builder/inventory.py<span class="w"> </span><span class="si">${</span><span class="nv">IPS</span><span class="p">[@]</span><span class="si">}</span>
+
+
+cat<span class="w"> </span>inventory/mycluster/group_vars/all/all.yml
+cat<span class="w"> </span>inventory/mycluster/group_vars/k8s-cluster/k8s-cluster.yml
+
+ansible-playbook<span class="w"> </span>-i<span class="w"> </span>inventory/mycluster/hosts.yaml<span class="w">  </span>--become<span class="w"> </span>--become-user<span class="o">=</span>root<span class="w"> </span>cluster.yml<span class="w"> </span>-v
+</code></pre></div>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://getpelican.com/">Pelican</a></li>
+                            <li><a href="https://www.python.org/">Python.org</a></li>
+                            <li><a href="https://palletsprojects.com/p/jinja/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="devasops.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a rel="nofollow" href="https://getpelican.com/">Pelican</a>, which takes great advantage of <a rel="nofollow" href="https://www.python.org/">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a rel="nofollow" href="https://www.smashingmagazine.com/2009/08/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
